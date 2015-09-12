@@ -24,7 +24,6 @@ EOF
 . ~/.profile
 
 
-
 # WIFI CONNECTION
 
 # backup original
@@ -43,8 +42,8 @@ iface usb0 inet static
 auto wlan0
 iface wlan0 inet dhcp
     # For WPA
-    wpa-ssid my_wifi_network
-    wpa-psk my_wifi_password
+    wpa-ssid my_network_name
+    wpa-psk my_network_password
     # For WEP
     #wireless-essid Emutex
     #wireless-mode Managed
@@ -80,8 +79,10 @@ iface wlan0 inet static
     address 192.168.0.1
     netmask 255.255.255.0" > /etc/network/interfaces_server.bak
 
-# connect Edison to WLAN
-beclient
+# connect Edison to WLAN - like calling custom 'beclient' function
+cp /etc/network/interfaces_client.bak /etc/network/interfaces;
+perl -0777 -i -pe 's/^DAEMON_CONF="[a-zA-Z\/\.]*"/#DAEMON_CONF="\/etc\/hostapd\/hostapd.conf"/igm' /etc/default/hostapd;
+
 
 # replace default hostname
 echo 'odk-edison' > /etc/hostname
@@ -95,12 +96,14 @@ cp /etc/rc.local /home/edison/backups/
 echo '#!/bin/bash
 echo "#!/bin/bash
 # do not remove this file. It is inert but can be used run scripts on bootup if necessary" > /home/edison/boot_script.sh
-./home/edison/setup_edison_odk2.sh' > /home/edison/boot_script.sh
+# uncomment next line to run subsequent setup scripts automatically
+#./home/edison/setup_edison_odk2.sh
+echo network setup' > /home/edison/boot_script.sh
 chmod 755 /home/edison/boot_script.sh
 
 # activate boot-script on startup by calling from /etc/rc.local
 perl -0777 -i -pe 's/^exit 0/# custom boot script\n\/home\/edison\/boot_script.sh &\n\nexit 0/igm' /etc/rc.local
 
-# setup_edison_odk2.sh will now run on reboot and boot script will be changed so this only happens once
+# if setup_edison_odk2.sh is configured to run on reboot boot_script.sh will be changed so this only happens once
 reboot
 
