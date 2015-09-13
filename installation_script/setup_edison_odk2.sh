@@ -105,8 +105,8 @@ apt-get update
 
 apt-get -t testing install hostapd
 # QUESTIONs
-# y to install
-# Y to ..?
+# Y to continue install
+# Y to upgrade glibc
 # Y to interrupt services
 # N to keep current version
 
@@ -162,7 +162,25 @@ psql
 \q
 exit
 
-
+# copy across ODKAggregate and activate
+# e.g. 'scp ODKAggregate.war root@192.168.0.1:/home/edison/'
+cp /home/edison/ODKAggregate.war /var/lib/tomcat6/webapps/
+service tomcat6 restart
 
 echo "ODK-Edison installation successful!!"
+
+
+# SD CARD SETUP
+
+# # Mount an SD card for backing up data
+# mkdir /home/edison/sd
+
+# # plug in SD card and check id:
+# dmesg -T | grep mmc1
+
+# # to mount e.g. for id 'mmcblk1':
+# # mount -t ext4 /dev/mmcblk1p1 /home/edison/sd/
+
+# # mount during boot up
+# perl -0777 -i -pe 's/^exit 0/# mount SD card\nmount -t ext4 \/dev\/mmcblk1p1 \/home\/edison\/sd\/ &\n\nexit 0/igm' /etc/rc.local
 

@@ -7,6 +7,7 @@ echo set const >> ~/.nanorc
 
 cat<<'EOF' >> ~/.profile
 
+alias ll='ls -FGlAhp'
 alias aliases='nano ~/.profile'
 
 beclient() {
