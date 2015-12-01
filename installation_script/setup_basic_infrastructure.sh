@@ -13,11 +13,15 @@ apt-get -y install openjdk-7-jdk
 # tomcat 7
 apt-get -y install tomcat7 tomcat7-admin
 
-# edit tomcat user permissions
+# Add tomcat users with permissions so that ODK Aggregate can use Tomcat
 cp /etc/tomcat7/tomcat-users.xml /etc/tomcat7/tomcat-users.xml.bak
 perl -0777 -i -pe 's/<\/tomcat-users>/<role rolename="manager-gui"\/>\n<role rolename="admin"\/>\n<user username="admin" password="admin" roles="admin,manager-gui"\/>\n<\/tomcat-users>/igm' /etc/tomcat7/tomcat-users.xml
 
-# edit
+# Edit the tomcat context (needed for ODK Aggregate to function on Tomcat7
+cp /etc/tomcat7/context.xml /etc/tomcat7/context.xml.bak
+perl -0777 -i -pe 's/<Context>/<Context useHttpOnly="false">/igm' /etc/tomcat7/context.xml
+
+# Install PostgreSQL
 echo 'deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main' >> /etc/apt/sources.list.d/pgdg.list
 
 apt-get -y install wget ca-certificates
@@ -26,31 +30,18 @@ apt-get update
 apt-get -y install postgresql
 apt-get -y install postgresql-client
 
-#----------------------------------------------------
-## Postgres stuff currently needs to be done manually
+# Change Postgres password
 
-su - postgres
-psql
+su - postgres -c "psql -U postgres -d postgres -c \"alter user postgres with password 'all4one';\""
 
-# password
-\password postgres
-all4one
-all4one
-
-\q
-exit
-
-#----------------------------------------------------
-
-apt-get update
 apt-get -y install nginx
 service nginx start
 
-# move 
+# Move nginx html file folder to /home/ for partition space reasons 
 mv /usr/share/nginx/www /home/edison/
 ln -s /home/edison/www/ /usr/share/nginx/www
 
-# edit
+# Create a quickie welcome page for the server
 echo "<html>
 <head>
 <title>ODK Aggregate in your pocket courtesy of the MSF-Data</title>
@@ -66,5 +57,3 @@ echo "<html>
 </center>
 </body>
 </html>" > /usr/share/nginx/www/index.html
-
-
