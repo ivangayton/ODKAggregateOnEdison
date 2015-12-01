@@ -2,9 +2,6 @@
 
 apt-get update
 apt-get -y upgrade
-apt-get clean
-apt-get autoclean
-apt-get -y autoremove
 
 # relocate /var for partition space reasons
 mv /var /home/edison/
@@ -13,23 +10,12 @@ ln -s /home/edison/var/ /var
 # java 7
 apt-get -y install openjdk-7-jdk
 
-apt-get clean
-apt-get autoclean
-apt-get -y autoremove
-
-# tomcat 6
-apt-get -y install tomcat6
-
-# seems unnecessary
-#reboot
-
-apt-get -y install tomcat6-admin
+# tomcat 7
+apt-get -y install tomcat7 tomcat7-admin
 
 # edit tomcat user permissions
-cp /etc/tomcat6/tomcat-users.xml /etc/tomcat6/tomcat-users.xml.bak
-perl -0777 -i -pe 's/<\/tomcat-users>/<role rolename="manager"\/>\n<role rolename="admin"\/>\n<user username="admin" password="admin" roles="admin,manager"\/>\n<\/tomcat-users>/igm' /etc/tomcat6/tomcat-users.xml
-
-service tomcat6 restart
+cp /etc/tomcat7/tomcat-users.xml /etc/tomcat7/tomcat-users.xml.bak
+perl -0777 -i -pe 's/<\/tomcat-users>/<role rolename="manager-gui"\/>\n<role rolename="admin"\/>\n<user username="admin" password="admin" roles="admin,manager-gui"\/>\n<\/tomcat-users>/igm' /etc/tomcat7/tomcat-users.xml
 
 # edit
 echo 'deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main' >> /etc/apt/sources.list.d/pgdg.list
@@ -37,11 +23,8 @@ echo 'deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main' >> /etc/apt
 apt-get -y install wget ca-certificates
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 apt-get update
-apt-get -y upgrade
-#apt-get install postgresql-9.4 postgresql-client
 apt-get -y install postgresql
 apt-get -y install postgresql-client
-
 
 #----------------------------------------------------
 ## Postgres stuff currently needs to be done manually
@@ -83,7 +66,6 @@ echo "<html>
 </center>
 </body>
 </html>" > /usr/share/nginx/www/index.html
-
 
 # ACCESS POINT
 
