@@ -9,10 +9,19 @@ read  wifi_password
 echo Please tell me what hostname you would like to give your server:
 read new_hostname 
 
-# echo "I'm afraid you're going to have to give me root access if you want me to flash the Edison."
+echo "I'm afraid you're going to have to give me root access if you want me to flash the Edison."
 echo "Please enter the password for the root user of the Edison (hint: it's \"edison\")."
 
-# sudo -p 'Password for user %u: ' echo $start
+sudo -p 'Password for user %u: ' echo $start
+
+# We need Expect to be installed on the host machine to interact with 
+# some of the installation scripts (and maybe to respond to the password
+# challenge from the newly flashed Edison (password "edison") to install
+# the ssh keys needed to get root access later.  Check if Expect is 
+# already installed, and if not install it.
+if ! type "expect" > /dev/null; then
+  sudo apt-get install expect
+fi
 
 # Maybe we can run the flashall script here, but let's see
 
@@ -24,13 +33,15 @@ if [ ! -f $key_file ]; then
 fi
 pubkey=$(cat $key_file.pub)
 
+# Add ssh key pair so that we can do other stuff on the Edison as root
+# without constantly needing the user to respond to password challenges
 do_on_edison <<< "
-# Add ssh key pair so that we can do other stuff on the Edison
 mkdir -p .ssh
 echo '$pubkey' >> .ssh/authorized_keys &&
     echo 'Added ssh access to $target successfully.'
 "
 
+# Configure the Edison to get on the internet using the local wifi
 do_on_edison <<< "
 if [ ! -f /etc/network/interfaces.bak ]; then
   cp /etc/network/interfaces /etc/network/interfaces.bak
@@ -52,12 +63,19 @@ if [ ! -d /home/edison/scripts/files ]; then
 fi
 "
 
+# Bung a bunch of scripts and files onto the Edison for use by the
+# setup script that will execute from the Edison itself on first boot
+copy_to_edison toCopy/setup_basic_infrastructure.sh /home/edison/scripts/
+
 copy_to_edison toCopy/ODKAggregate.war /home/edison/scripts/files/
 copy_to_edison toCopy/create_db_and_user.sql /home/edison/scripts/files/
 copy_to_edison toCopy/index.html /home/edison/scripts/files/
 
-copy_to_edison toCopy/setup_basic_infrastructure.sh /home/edison/scripts/
-
+# Add a file to the init.d folder and update rc.d to run it next boot.
+# This file (kickoff.sh) will run once, then remove itself from the rc.d
+# configuration so that it won't be run on subsequent boots. Kickoff will
+# call the other scripts in /home/edison/ to set up the server before
+# committing suicide. 
 do_on_edison <<< "
 chmod +x /home/edison/scripts/setup_basic_infrastructure.sh
 echo '\#!/bin/bash

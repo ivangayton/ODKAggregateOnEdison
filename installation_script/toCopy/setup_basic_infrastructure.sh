@@ -42,5 +42,5 @@ mv /usr/share/nginx/www /home/edison/
 ln -s /home/edison/www/ /usr/share/nginx/www
 
 # Create a quickie welcome page for the Nginx server
-mv index.html /usr/share/nginx/www/
+mv files/index.html /usr/share/nginx/www/
 
