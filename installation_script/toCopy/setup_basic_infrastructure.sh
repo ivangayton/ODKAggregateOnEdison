@@ -3,21 +3,21 @@
 apt-get update
 apt-get -y upgrade
 
-# relocate /var for partition space reasons
+echo moving the /var/ folder to /home/edison for partition space reasons
 mv /var /home/edison/
 ln -s /home/edison/var/ /var
 
-# java 7
+echo installing java 7
 apt-get -y install openjdk-7-jdk
 
-# tomcat 7
+echo installing tomcat 7
 apt-get -y install tomcat7 tomcat7-admin
 
-# Add tomcat users with permissions so that ODK Aggregate can use Tomcat
+echo Adding tomcat users with permissions so that ODK Aggregate can use Tomcat
 cp /etc/tomcat7/tomcat-users.xml /etc/tomcat7/tomcat-users.xml.bak
 perl -0777 -i -pe 's/<\/tomcat-users>/<role rolename="manager-gui"\/>\n<role rolename="admin"\/>\n<user username="admin" password="admin" roles="admin,manager-gui"\/>\n<\/tomcat-users>/igm' /etc/tomcat7/tomcat-users.xml
 
-# Edit the tomcat context (needed for ODK Aggregate to function on Tomcat7
+echo Editing the tomcat context, needed for ODK Aggregate to work on Tomcat7
 cp /etc/tomcat7/context.xml /etc/tomcat7/context.xml.bak
 perl -0777 -i -pe 's/<Context>/<Context useHttpOnly="false">/igm' /etc/tomcat7/context.xml
 
@@ -38,9 +38,11 @@ apt-get -y install nginx
 service nginx start
 
 # Move nginx html file folder to /home/ for partition space reasons 
-mv /usr/share/nginx/www /home/edison/
-ln -s /home/edison/www/ /usr/share/nginx/www
+if [ ! -d /home/edison/www ]; then
+  mv /usr/share/nginx/www /home/edison/
+  ln -s /home/edison/www/ /usr/share/nginx/www
+fi
 
-# Create a quickie welcome page for the Nginx server
+# Copy a quickie welcome page for the Nginx server into its home folder
 mv files/index.html /usr/share/nginx/www/
 

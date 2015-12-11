@@ -25,3 +25,5 @@ echo flashing seems to be done.
 
 echo 'Waiting 2 minutes for the Edison to be ready before installing more stuff'
 sleep 120
+cd ../..
+

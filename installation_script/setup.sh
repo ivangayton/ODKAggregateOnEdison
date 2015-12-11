@@ -13,6 +13,8 @@ echo "I'm afraid you're going to have to give me root access if you want me to f
 
 sudo -p 'Password for user %u: ' echo $start
 
+sudo ./download_ubilinux_and_flash_the_edison.sh
+
 # We need Expect to be installed on the host machine to interact with 
 # some of the installation scripts (and maybe to respond to the password
 # challenge from the newly flashed Edison (password "edison") to install
@@ -32,6 +34,7 @@ pubkey=$(cat $key_file.pub)
 
 # Add ssh key pair so that we can do other stuff on the Edison as root
 # without constantly needing the user to respond to password challenges
+echo 'Attempting to place an ssh key on the Edison to allow root access.'
 do_on_edison <<< "
 mkdir -p .ssh
 echo '$pubkey' >> .ssh/authorized_keys &&
@@ -39,18 +42,25 @@ echo '$pubkey' >> .ssh/authorized_keys &&
 "
 
 # Configure the Edison to get on the internet using the local wifi
+echo 'Now setting up internet access on the Edison using your wifi network.'
 do_on_edison <<< "
+# if there's already a file called /etc/network/interfaces.bak, assume this 
+# step is already done (probably because this script or one like it has 
+# already run).
 if [ ! -f /etc/network/interfaces.bak ]; then
+  echo backing up /etc/network/interfaces
   cp /etc/network/interfaces /etc/network/interfaces.bak
+  echo modifying /etc/network/interfaces to connect to the local wifi
+  sed -i '0,/\#auto wlan0/s/\#auto wlan0/auto wlan0/' /etc/network/interfaces
+  sed -i '/wpa-ssid/c\    wpa-ssid $wifi_ssid' /etc/network/interfaces
+  sed -i '/wpa-psk/c\    wpa-psk $wifi_password' /etc/network/interfaces
+  sed -i '/auto usb0/c\\#auto usb0' /etc/network/interfaces
 fi
 
-sed -i '0,/\#auto wlan0/s/\#auto wlan0/auto wlan0/' /etc/network/interfaces
-sed -i '/wpa-ssid/c\    wpa-ssid $wifi_ssid' /etc/network/interfaces
-sed -i '/wpa-psk/c\    wpa-psk $wifi_password' /etc/network/interfaces
-sed -i '/auto usb0/c\\#auto usb0' /etc/network/interfaces
-
+echo changing the hostname of the server
 echo $new_hostname > /etc/hostname
 
+echo creating a folder in /home/edison for scripts
 if [ ! -d /home/edison/scripts ]; then
   mkdir /home/edison/scripts
 fi
@@ -60,21 +70,29 @@ if [ ! -d /home/edison/scripts/files ]; then
 fi
 "
 
-# Bung a bunch of scripts and files onto the Edison for use by the
-# setup script that will execute from the Edison itself on first boot
+echo Copying a bunch of scripts onto the Edison to set up the server
 copy_to_edison toCopy/setup_basic_infrastructure.sh /home/edison/scripts/
+copy_to_edison toCopy/install_ODK_Aggregate.sh /home/edison/scripts/
+copy_to_edison toCopy/setup_edison_as_ap.sh /home/edison/scripts
+echo Setting all of those scripts to be executable
+do_on_edison <<<"
+chmod +x /home/edison/scripts/setup_basic_infrastructure.sh
+chmod +x /home/edison/scripts/install_ODK_Aggregate.sh
+chmod +x /home/edison/scripts/setup_edison_as_ap.sh
+"
 
+echo Copying a bunch of assorted files onto the Edison
 copy_to_edison toCopy/ODKAggregate.war /home/edison/scripts/files/
 copy_to_edison toCopy/create_db_and_user.sql /home/edison/scripts/files/
 copy_to_edison toCopy/index.html /home/edison/scripts/files/
 
 # Add a file to the init.d folder and update rc.d to run it next boot.
-# This file (kickoff.sh) will run once, then remove itself from the rc.d
-# configuration so that it won't be run on subsequent boots. Kickoff will
-# call the other scripts in /home/edison/ to set up the server before
-# committing suicide. 
+# This file (kickoff.sh) will run once, and the first thing is does is to
+# remove itself from the rc.d configuration so that it won't be run on
+# subsequent boots. After thereby committing suicide, Kickoff will call 
+# the other scripts in /home/edison/ to set up the server.
+echo preparing to run the server setup script on reboot
 do_on_edison <<< "
-chmod +x /home/edison/scripts/setup_basic_infrastructure.sh
 echo '\#!/bin/bash
 
 ### BEGIN INIT INFO
@@ -86,12 +104,17 @@ echo '\#!/bin/bash
 # Short-Description:    kickoff of Edison setup
 ### END INIT INFO
 
-/home/edison/scripts/setup_basic_infrastructure.sh
-# 
-# other stuff
-# 
-update-rc.d -f kickoff.sh remove
-' > /etc/init.d/kickoff.sh
-chmod +x /etc/init.d/kickoff.sh
+echo Now running the kickoff script to set up the server.
+' > /etc/init.d/kickoff.shchmod +x /etc/init.d/kickoff.sh
 update-rc.d kickoff.sh defaults
+
+/home/edison/scripts/setup_basic_infrastructure.sh
+/home/edison/scripts/install_ODK_Aggregate.sh
+# /home/edison/scripts/setup_edison_as_ap.sh
+# other stuff...
+"
+
+echo rebooting the Edison and hope that the kickoff script works
+do_on_edison <<< "
+reboot
 "

@@ -70,12 +70,13 @@ function write_to_edison() {
 function copy_to_edison() {
     local_file=$1
     remote_path=$2
+    connect_ethernet
     if [ ! -f $local_file ]; then
       echo Your file $local_file does not seem to exist. That might be a problem.
     fi
 
     if [ -f $local_file ]; then
-      scp $local_file $target:/$remote_path
+      $scp $local_file $target:/$remote_path
     fi
 }
 
