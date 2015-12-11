@@ -10,7 +10,6 @@ echo Please tell me what hostname you would like to give your server:
 read new_hostname 
 
 echo "I'm afraid you're going to have to give me root access if you want me to flash the Edison."
-echo "Please enter the password for the root user of the Edison (hint: it's \"edison\")."
 
 sudo -p 'Password for user %u: ' echo $start
 
@@ -23,7 +22,20 @@ if ! type "expect" > /dev/null; then
   sudo apt-get install expect
 fi
 
-# Maybe we can run the flashall script here, but let's see
+# If we don't already have it, download the Ubilinux image
+if [ ! -f ubilinux/ubilinux-edison-150309.tar.gz ]; then
+  echo 'Please chill out for a while as we download the Ubilinux operating system from the internet. This will take a few minutes, depending on your internet connection.'
+  wget -P ubilinux/ http://www.emutexlabs.com/files/ubilinux/ubilinux-edison-150309.tar.gz
+fi
+
+# If we haven't already done so, unzip it to get the included toFlash folder
+if [ ! -d /ubilinux/toFlash ]; then
+  echo 'Now we need to unpack it, which may take a little time.'
+  tar -xzf ubilinux/ubilinux-edison-150309.tar.gz -C ubilinux/
+fi
+
+# Flash the Edison
+sudo /ubilinux/toFlash/flashall.sh
 
 # Check if there's already a key in the file $HOME/.ssh/edison on the host
 # If not, create it (below we'll place the key on the Edison as well so
