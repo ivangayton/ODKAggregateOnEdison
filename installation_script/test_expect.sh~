@@ -1,0 +1,15 @@
+#!/usr/bin/expect -f
+pubkey='cat /home/ivan/.ssh/edison.pub'
+echo $pubkey
+
+spawn ssh surveyor@192.168.0.118
+expect "password: "
+send "plumpynut\r"
+expect "$ "
+send "echo $pubkey >> .ssh/authorized_keys &&
+    echo 'added ssh access to remote successfully.'
+"
+expect "$ "
+send "exit\r"
+
+

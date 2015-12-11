@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Need a program to answer questions from installers later in this script.
+apt-get install expect
+
+apt-get install dnsmasq
+
+# Add testing repositories to get bleeding-edge hostapd
+echo deb http://ftp.us.debian.org/debian testing main contrib non-free >> /etc/apt/sources.list
+
+# Pin the hostapd package (pinning facilitates mixing of testing and stable)
+# packages without getting everything on the bleeding edge.
+echo 'Package: hostapd
+Pin: release a=testing
+Pin-Priority: 900' >> /etc/apt/preferences
+
+echo $HOSTNAME >> /etc/hosts
+
+echo dhcp-range=192.168.0.50,192.168.0.150,12h >> /etc/dnsmasq.conf
+
+apt-get update
+
+apt-get -t testing install hostapd
+
+# Here we need to answer some questions from the installer. No idea how to do this for the moment. Probably need to install Expect.
+
+
+
