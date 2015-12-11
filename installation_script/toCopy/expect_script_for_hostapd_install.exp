@@ -14,19 +14,23 @@ if {$force_conservative} {
 set timeout -1
 spawn $env(SHELL)
 match_max 100000
-expect "~# "
+expect "# "
+echo waiting 2 seconds
 sleep 2
 send -- "apt-get -t testing install -y hostapd\r"
 expect "answer No to the question below."
+echo waiting 2 seconds
 sleep 2
 send -- "\r"
 expect "Do you want to upgrade glibc now?"
+echo waiting 2 seconds
 sleep 2
 send -- "\r"
-expect "Restart services during package upgrades without asking?
+expect "Restart services during package upgrades without asking?"
+echo waiting 2 seconds
 sleep 2
 send -- "	\r"
 expect "[default=N\] ? "
+echo waiting 2 seconds
 sleep 2
 send -- "\r"
-
