@@ -5,6 +5,7 @@ if ! type "expect" > /dev/null; then
   apt-get install -y expect
 fi
 
+echo installing dnsmasq
 apt-get install -y dnsmasq
 
 # Add testing repositories to get bleeding-edge hostapd
@@ -19,18 +20,51 @@ Pin-Priority: 900' >> /etc/apt/preferences
 
 apt-get update
 
-apt-get -t testing install -y hostapd
+#
+# Trigger the Expect script to install the testing version of hostapd
+#
 
-# Here we need to answer some questions from the installer. We'll use Expect.
+echo installing dnsutils
+apt-get install -y dnsutils
 
-# carriage return (OK) for a sort of splash page
-# carriage return (yes) (it's really carriage return, not a y)
-# TAB to yes (default is no) then carriage return
-# N or carriage return to keep current version of configuration file
+echo 192.168.0.1     $HOSTNAME >> /etc/hosts
 
-
-
-echo $HOSTNAME >> /etc/hosts
-
+cp /etc/dnsmasq.conf /etc/dnsmasq.conf.CLIENT
 echo dhcp-range=192.168.0.50,192.168.0.150,12h >> /etc/dnsmasq.conf
 
+cp /etc/default/hostapd etc/default/hostapd.CLIENT
+echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' >> /etc/default/hostapd
+
+cp /etc/network/interfaces /etc/network/interfaces.CLIENT
+echo '
+# interfaces(5) file used by ifup(8) and ifdown(8)
+auto lo
+iface lo inet loopback
+
+#auto usb0
+iface usb0 inet static
+    address 192.168.2.15
+    netmask 255.255.255.0
+
+#auto wlan0
+#iface wlan0 inet dhcp
+    # For WPA
+#    wpa-ssid mywirelessnetwork
+#    wpa-psk mypassword
+    # For WEP
+    #wireless-essid Emutex
+    #wireless-mode Managed
+    #wireless-key s:password
+# And the following 4 lines are for when using hostapd... 
+auto wlan0
+iface wlan0 inet static
+    post-up service hostapd restart
+    address 192.168.0.1
+    netmask 255.255.255.0   
+' > /etc/network/interfaces
+
+cp /etc/hostapd/udhcpd-for-hostapd.conf /etc/hostapd/udhcpd-for-hostapd.conf.CLIENT
+
+sed -i '/interface       wlan0/c\interface lo' /etc/hostapd/udhcpd-for-hostapd.conf
+
+#reboot
