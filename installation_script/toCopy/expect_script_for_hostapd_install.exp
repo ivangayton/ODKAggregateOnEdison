@@ -1,0 +1,32 @@
+#!/usr/bin/expect -f
+
+set force_conservative 1  ;# set to 1 to force conservative mode even if
+			  ;# script wasn't run conservatively originally
+if {$force_conservative} {
+	set send_slow {1 .1}
+	proc send {ignore arg} {
+		sleep .1
+		exp_send -s -- $arg
+	}
+}
+
+
+set timeout -1
+spawn $env(SHELL)
+match_max 100000
+expect "~# "
+sleep 2
+send -- "apt-get -t testing install -y hostapd\r"
+expect "answer No to the question below."
+sleep 2
+send -- "\r"
+expect "Do you want to upgrade glibc now?"
+sleep 2
+send -- "\r"
+expect "Restart services during package upgrades without asking?
+sleep 2
+send -- "	\r"
+expect "[default=N\] ? "
+sleep 2
+send -- "\r"
+
