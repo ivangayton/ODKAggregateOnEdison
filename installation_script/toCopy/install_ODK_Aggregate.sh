@@ -6,7 +6,7 @@
 
 echo Running the SQL script that creates the user and database for Aggregate
 su - postgres -c "
-psql -U postgres -f /home/edison/files/create_db_and_user.sql
+psql -U postgres -f /home/edison/scripts/files/create_db_and_user.sql
 "
 
 echo Copying the ODKAggregate.war file into the Tomcat webapps directory

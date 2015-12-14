@@ -74,11 +74,18 @@ echo Copying a bunch of scripts onto the Edison to set up the server
 copy_to_edison toCopy/setup_basic_infrastructure.sh /home/edison/scripts/
 copy_to_edison toCopy/install_ODK_Aggregate.sh /home/edison/scripts/
 copy_to_edison toCopy/setup_edison_as_ap.sh /home/edison/scripts
+copy_to_edison toCopy/expect_script_for_hostapd_install.exp /home/edison/scripts/
+copy_to_edison toCopy/be_ap.sh /home/edison/scripts/
+copy_to_edison toCopy/be_client.sh /home/edison/scripts
+
 echo Setting all of those scripts to be executable
 do_on_edison <<<"
 chmod +x /home/edison/scripts/setup_basic_infrastructure.sh
 chmod +x /home/edison/scripts/install_ODK_Aggregate.sh
 chmod +x /home/edison/scripts/setup_edison_as_ap.sh
+chmod +x /home/edison/scripts/expect_script_for_hostapd_install.exp
+chmod +x /home/edison/scripts/be_client.sh
+chmod +x /home/edison/scripts/be_ap.sh
 "
 
 echo Copying a bunch of assorted files onto the Edison
@@ -86,35 +93,22 @@ copy_to_edison toCopy/ODKAggregate.war /home/edison/scripts/files/
 copy_to_edison toCopy/create_db_and_user.sql /home/edison/scripts/files/
 copy_to_edison toCopy/index.html /home/edison/scripts/files/
 
-# Add a file to the init.d folder and update rc.d to run it next boot.
-# This file (kickoff.sh) will run once, and the first thing is does is to
-# remove itself from the rc.d configuration so that it won't be run on
-# subsequent boots. After thereby committing suicide, Kickoff will call 
-# the other scripts in /home/edison/ to set up the server.
+
 echo preparing to run the server setup script on reboot
-do_on_edison <<< "
-echo '\#!/bin/bash
+copy_to_edison toCopy/kickoff.sh /home/edison/scripts/
+#
+# TODO apparently mucking with rc.local causes a fatal reboot loop. Bork.
+# Need to find another way to run the kickoff script.
+#
+# Add a line to the rc.local file to run a setup script next boot.
+# do_on_edison <<< "
+# chmod +x /home/edison/scripts/kickoff.sh
+# sed -i '/exit 0/c\\/home\/edison\/scripts\/kickoff.sh\n\nexit 0' /etc/rc.local
+# "
 
-### BEGIN INIT INFO
-# Provides:             kickoff
-# Required-Start:       $remote_fs $syslog
-# Required-Stop:        $remote_fs $syslog
-# Default-Start:        2 3 4 5
-# Default-Stop:         0 1 6
-# Short-Description:    kickoff of Edison setup
-### END INIT INFO
 
-echo Now running the kickoff script to set up the server.
-' > /etc/init.d/kickoff.shchmod +x /etc/init.d/kickoff.sh
-update-rc.d kickoff.sh defaults
 
-/home/edison/scripts/setup_basic_infrastructure.sh
-/home/edison/scripts/install_ODK_Aggregate.sh
-# /home/edison/scripts/setup_edison_as_ap.sh
-# other stuff...
-"
-
-echo rebooting the Edison and hope that the kickoff script works
-do_on_edison <<< "
-reboot
-"
+echo NOT rebooting the Edison and hope that the kickoff script works
+#do_on_edison <<< "
+#reboot
+#"

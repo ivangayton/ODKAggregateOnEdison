@@ -30,11 +30,11 @@ apt-get install -y dnsutils
 echo 192.168.0.1     $HOSTNAME >> /etc/hosts
 
 cp /etc/dnsmasq.conf /etc/dnsmasq.conf.CLIENT
-cp /etc/dnsmasq.cong /etc/dnsmasq.conf.AP
+cp /etc/dnsmasq.conf /etc/dnsmasq.conf.AP
 echo dhcp-range=192.168.0.50,192.168.0.150,12h >> /etc/dnsmasq.conf.AP
 
-cp /etc/default/hostapd etc/default/hostapd.CLIENT
-cp /etc/default/hostapd etc/default/hostapd.AP
+cp /etc/default/hostapd /etc/default/hostapd.CLIENT
+cp /etc/default/hostapd /etc/default/hostapd.AP
 echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' >> /etc/default/hostapd.AP
 
 cp /etc/network/interfaces /etc/network/interfaces.CLIENT
@@ -66,10 +66,8 @@ iface wlan0 inet static
     netmask 255.255.255.0   
 ' > /etc/network/interfaces.AP
 
-cp '/etc/hostapd/udhcpd-for-hostapd.conf 
-/etc/hostapd/udhcpd-for-hostapd.conf.CLIENT'
-cp '/etc/hostapd/udhcpd-for-hostapd.conf 
-/etc/hostapd/udhcpd-for-hostapd.conf.AP'
+cp /etc/hostapd/udhcpd-for-hostapd.conf /etc/hostapd/udhcpd-for-hostapd.conf.CLIENT
+cp /etc/hostapd/udhcpd-for-hostapd.conf /etc/hostapd/udhcpd-for-hostapd.conf.AP
 sed -i '/interface       wlan0/c\interface lo' /etc/hostapd/udhcpd-for-hostapd.conf
 
 #reboot
