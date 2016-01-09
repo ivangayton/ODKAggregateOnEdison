@@ -13,9 +13,15 @@ echo "I'm afraid you're going to have to give me root access if you want me to f
 
 sudo -p 'Password for user %u: ' echo $start
 
+# Need DFU-Util and Screen to work on the Edison
 if ! type "dfu-util" > /dev/null; then
   sudo apt-get install dfu-util
 fi
+
+if ! type "screen" > /dev/null; then
+  sudo apt-get install screen
+fi
+
 
 sudo ./download_ubilinux_and_flash_the_edison.sh
 
