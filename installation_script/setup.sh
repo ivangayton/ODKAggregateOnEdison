@@ -13,6 +13,10 @@ echo "I'm afraid you're going to have to give me root access if you want me to f
 
 sudo -p 'Password for user %u: ' echo $start
 
+if ! type "dfu-util" > /dev/null; then
+  sudo apt-get install dfu-util
+fi
+
 sudo ./download_ubilinux_and_flash_the_edison.sh
 
 # We need Expect to be installed on the host machine to interact with 
