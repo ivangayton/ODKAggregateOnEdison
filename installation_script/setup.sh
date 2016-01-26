@@ -34,6 +34,10 @@ if ! type "expect" > /dev/null; then
   sudo apt-get install expect
 fi
 
+# remove any previous Edison from the known_hosts file on the host
+# to avoid the host refusing to connect via ssh to the unfamiliar Edison
+ssh-keygen -f "$HOME/.ssh/known_hosts" -R 192.168.2.15
+
 # Check if there's already a key in the file $HOME/.ssh/edison on the host
 # If not, create it (below we'll place the key on the Edison as well so
 # that we can copy stuff over to it with scp.
