@@ -55,11 +55,13 @@ pubkey=$(cat $key_file.pub)
 # Add ssh key pair so that we can do other stuff on the Edison as root
 # without constantly needing the user to respond to password challenges
 echo 'Attempting to place an ssh key on the Edison to allow root access.'
-do_on_edison <<< "
-mkdir -p .ssh
-echo '$pubkey' >> .ssh/authorized_keys &&
-    echo 'Added ssh access to $target successfully.'
-"
+#do_on_edison <<< "
+#mkdir -p .ssh
+#echo '$pubkey' >> .ssh/authorized_keys &&
+#    echo 'Added ssh access to $target successfully.'
+#"
+
+./setup_remote_access.exp
 
 # Configure the Edison to get on the internet using the local wifi
 echo 'Now setting up internet access on the Edison using your wifi network.'

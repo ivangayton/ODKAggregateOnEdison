@@ -17,3 +17,5 @@ match_max 100000
 
 expect "root@192.168.2.15's password: "
 send -- "edison\r"
+
+expect eof
