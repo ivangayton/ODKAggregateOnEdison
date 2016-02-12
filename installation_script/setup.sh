@@ -1,6 +1,8 @@
 #!/bin/bash
 
 set -e
+# The file remote-execution.sh contains several functions and variables that
+# are useful to this process, mainly around connecting to the Edison.
 source remote-execution.sh
 echo Please enter the local wifi network name:
 read wifi_ssid
@@ -13,7 +15,7 @@ echo "I'm afraid you're going to have to give me root access if you want me to f
 
 sudo -p 'Password for user %u: ' echo $start
 
-# Need DFU-Util and Screen to work on the Edison
+# Need DFU-Util and Screen to flash and connect to the Edison
 if ! type "dfu-util" > /dev/null; then
   sudo apt-get install dfu-util
 fi
@@ -22,27 +24,31 @@ if ! type "screen" > /dev/null; then
   sudo apt-get install screen
 fi
 
-
+echo launching the ubilinux install script
 sudo ./download_ubilinux_and_flash_the_edison.sh
-
+echo ubilinux install script finished and we have waited 2 minutes
 # We need Expect to be installed on the host machine to interact with 
 # some of the installation scripts (and maybe to respond to the password
 # challenge from the newly flashed Edison (password "edison") to install
 # the ssh keys needed to get root access later.  Check if Expect is 
 # already installed, and if not install it.
+
 if ! type "expect" > /dev/null; then
   sudo apt-get install expect
 fi
 
 # remove any previous Edison from the known_hosts file on the host
 # to avoid the host refusing to connect via ssh to the unfamiliar Edison
+echo removing 
 ssh-keygen -f "$HOME/.ssh/known_hosts" -R 192.168.2.15
 
 # Check if there's already a key in the file $HOME/.ssh/edison on the host
 # If not, create it (below we'll place the key on the Edison as well so
 # that we can copy stuff over to it with scp.
+
 if [ ! -f $key_file ]; then
     ssh-keygen -t dsa -f $key_file -P ''
+    echo created an ssh key on this host computer
 fi
 pubkey=$(cat $key_file.pub)
 
