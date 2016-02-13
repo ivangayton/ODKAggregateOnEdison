@@ -10,6 +10,8 @@ echo Please enter the local wifi password:
 read  wifi_password
 echo Please tell me what hostname you would like to give your server:
 read new_hostname 
+echo Please enter the root password you would like to set for your server:
+read server_root_password
 
 echo "I'm afraid you're going to have to give me root access if you want me to flash the Edison. You may be asked to enter your sudo password at some point during this installation"
 
@@ -54,14 +56,16 @@ pubkey=$(cat $key_file.pub)
 
 # Add ssh key pair so that we can do other stuff on the Edison as root
 # without constantly needing the user to respond to password challenges
-echo 'Attempting to place an ssh key on the Edison to allow root access.'
-#do_on_edison <<< "
-#mkdir -p .ssh
-#echo '$pubkey' >> .ssh/authorized_keys &&
-#    echo 'Added ssh access to $target successfully.'
-#"
+echo launching expect script that will answer password challenge on Edison
+expect answer_password_challenge.exp
 
-./setup_remote_access.exp
+echo 'Attempting to place an ssh key on the Edison to allow root access.'
+do_on_edison <<< "
+mkdir -p .ssh
+echo '$pubkey' >> .ssh/authorized_keys &&
+    echo 'Added ssh access to $target successfully.'
+"
+
 
 # Configure the Edison to get on the internet using the local wifi
 echo 'Now setting up internet access on the Edison using your wifi network.'
