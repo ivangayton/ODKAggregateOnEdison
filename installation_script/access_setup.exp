@@ -1,31 +1,25 @@
 #!/usr/bin/expect -f
 
-set force_conservative 0  ;# set to 1 to force conservative mode even if
-			  ;# script wasn't run conservatively originally
-if {$force_conservative} {
-	set send_slow {1 .1}
-	proc send {ignore arg} {
-		sleep .1
-		exp_send -s -- $arg
-	}
-}
-
-set pub_key [lindex $argv 0]
+set password [lindex $argv 0]
+set pub_key_1 [lindex $argv 1]
+set pub_key_2 [lindex $argv 2]
+set pub_key_3 [lindex $argv 3]
 set timeout 10
-spawn $env(SHELL)
-match_max 100000
-
-
-expect "$ "
-send -- "ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@192.168.2.15\r"
-sleep 5
+spawn ssh -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=no root@192.168.2.15
 expect "password: "
 send -- "edison\r"
 expect "~# "
 send -- "mkdir .ssh\r"
-expect -exact "~# "
-send -- "echo $pub_key > .ssh/authorized_keys\r"
-expect -exact "~# "
+expect "~# "
+send -- "echo $pub_key_1 $pub_key_2 $pub_key_3 > .ssh/authorized_keys\r"
+
+expect "~# "
+send -- "passwd\r"
+expect "password: "
+send -- "$password\r"
+expect "password: "
+send -- "$password\r"
+sleep 1
+expect "~# "
 send -- "exit\r"
-expect "$ "
 expect eof
