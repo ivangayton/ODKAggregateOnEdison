@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 if [ ! -d ubilinux ]; then
   mkdir ubilinux
 fi

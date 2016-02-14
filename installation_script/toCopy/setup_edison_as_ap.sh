@@ -2,7 +2,7 @@
 
 # Need a program to answer questions from installers later in this script.
 if ! type "expect" > /dev/null; then
-  apt-get install -y expect
+  apt-get install -y expect expect-dev
 fi
 
 echo installing dnsmasq
@@ -22,16 +22,24 @@ apt-get update
 
 # TODO: untested
 echo Trigger the Expect script to install the testing version of hostapd
-./expect_script_for_hostapd_install.exp
+#./install_hostapd.exp
 
 echo installing dnsutils
 apt-get install -y dnsutils
 
 echo 192.168.0.1     $HOSTNAME >> /etc/hosts
 
-cp /etc/dnsmasq.conf /etc/dnsmasq.conf.CLIENT
-cp /etc/dnsmasq.conf /etc/dnsmasq.conf.AP
-echo dhcp-range=192.168.0.50,192.168.0.150,12h >> /etc/dnsmasq.conf.AP
+cp /etc/dnsmasq.conf /etc/dnsmasq.conf.bak
+echo dhcp-range=192.168.0.50,192.168.0.150,12h >> /etc/dnsmasq.conf
+
+echo making a backup of /etc/hostapd/hostapd.conf
+echo and nuking all black or comment lines
+cp /etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf.bak
+cat /etc/hostapd/hostapd.conf.bak | grep -v '#' | grep -v '^$' > /etc/hostapd/hostapd.conf
+echo setting the ssid (to the hostname plus -ap) and wpa_passphrase
+sed -i "/ssid/c\ssid=$HOSTNAME-ap" /etc/hostapd/hostapd.conf
+wpa_passphrase=$(cat /home/edison/scripts/wpa_passphrase)
+sed -i "/wpa_passphrase/c\wpa_passphrase=$wpa_passphrase" /etc/hostapd/hostapd.conf
 
 cp /etc/default/hostapd /etc/default/hostapd.CLIENT
 cp /etc/default/hostapd /etc/default/hostapd.AP
@@ -66,8 +74,7 @@ iface wlan0 inet static
     netmask 255.255.255.0   
 ' > /etc/network/interfaces.AP
 
-cp /etc/hostapd/udhcpd-for-hostapd.conf /etc/hostapd/udhcpd-for-hostapd.conf.CLIENT
-cp /etc/hostapd/udhcpd-for-hostapd.conf /etc/hostapd/udhcpd-for-hostapd.conf.AP
-sed -i '/interface       wlan0/c\interface lo' /etc/hostapd/udhcpd-for-hostapd.conf
+echo disabling the UDHCP daemon that fights with dnsmasq
+cp /etc/hostapd/udhcpd-for-hostapd.conf /etc/hostapd/udhcpd-for-hostapd.conf.bak
+sed -i '0,/wlan0/s//lo/' /etc/hostapd/udhcpd-for-hostapd.conf
 
-#reboot

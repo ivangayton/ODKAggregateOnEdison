@@ -12,9 +12,11 @@ echo Please tell me what hostname you would like to give your server:
 read new_hostname 
 echo Please enter the root password you would like to set for your server:
 read server_root_password
+echo Please enter the wifi password you want to use for your server
+echo when it functions as an access point
+read server_ap_wpa_passphrase
 
-echo "I'm afraid you're going to have to give me root access if you want me to flash the Edison. You may be asked to enter your sudo password at some point during this installation"
-
+echo "I'm afraid you're going to have to give me root access if you want me to flash the Edison."
 sudo -p 'Password for user %u: ' echo $start
 
 # Need DFU-Util to flash the Edison
@@ -32,15 +34,12 @@ echo launching the ubilinux install script
 sudo ./download_ubilinux_and_flash_the_edison.sh
 echo ubilinux install script finished and we have waited 2 minutes
 
-# remove any previous Edison from the known_hosts file on the host
-# to avoid the host refusing to connect via ssh to the unfamiliar Edison
+# Avoid the host refusing to connect via ssh to the unfamiliar Edison
 echo removing any previous Edison from Known Hosts
 ssh-keygen -f "$HOME/.ssh/known_hosts" -R 192.168.2.15
 
-# Check if there's already a key in the file $HOME/.ssh/edison on the host
-# If not, create it (below we'll place the key on the Edison as well so
-# that we can copy stuff over to it with scp.
-
+# Check if there's already a keypair in the file $HOME/.ssh/edison on the host
+# If not, create it to facilitate ssh access to the Edison.
 if [ ! -f $key_file ]; then
     ssh-keygen -t dsa -f $key_file -P ''
     echo created an ssh key on this host computer
@@ -74,39 +73,13 @@ fi
 
 echo changing the hostname of the server
 echo $new_hostname > /etc/hostname
-
-echo creating a folder in /home/edison for scripts
-if [ ! -d /home/edison/scripts ]; then
-  mkdir /home/edison/scripts
-fi
-
-if [ ! -d /home/edison/scripts/files ]; then
-  mkdir /home/edison/scripts/files
-fi
 "
 
-echo Copying a bunch of scripts onto the Edison to set up the server
-copy_to_edison toCopy/setup_basic_infrastructure.sh /home/edison/scripts/
-copy_to_edison toCopy/install_ODK_Aggregate.sh /home/edison/scripts/
-copy_to_edison toCopy/setup_edison_as_ap.sh /home/edison/scripts
-copy_to_edison toCopy/expect_script_for_hostapd_install.exp /home/edison/scripts/
-copy_to_edison toCopy/be_ap.sh /home/edison/scripts/
-copy_to_edison toCopy/be_client.sh /home/edison/scripts
+./copy_scripts_and_files_onto_edison.sh
 
-echo Setting all of those scripts to be executable
 do_on_edison <<<"
-chmod +x /home/edison/scripts/setup_basic_infrastructure.sh
-chmod +x /home/edison/scripts/install_ODK_Aggregate.sh
-chmod +x /home/edison/scripts/setup_edison_as_ap.sh
-chmod +x /home/edison/scripts/expect_script_for_hostapd_install.exp
-chmod +x /home/edison/scripts/be_client.sh
-chmod +x /home/edison/scripts/be_ap.sh
+echo $server_ap_wpa_passphrase > /home/edison/scripts/wpa_passphrase
 "
-
-echo Copying a bunch of assorted files onto the Edison
-copy_to_edison toCopy/ODKAggregate.war /home/edison/scripts/files/
-copy_to_edison toCopy/create_db_and_user.sql /home/edison/scripts/files/
-copy_to_edison toCopy/index.html /home/edison/scripts/files/
 
 
 echo rebooting the Edison and wishing we had set up a startup service
