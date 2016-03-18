@@ -1,29 +1,5 @@
 #!/bin/bash
 
-# Need a program to answer questions from installers later in this script.
-if ! type "expect" > /dev/null; then
-  apt-get install -y expect expect-dev
-fi
-
-echo installing dnsmasq
-apt-get install -y dnsmasq
-
-# Add testing repositories to get bleeding-edge hostapd
-echo deb http://ftp.us.debian.org/debian testing main contrib non-free >> /etc/apt/sources.list
-
-# Pin the hostapd package (pinning facilitates mixing of testing and stable)
-# packages without getting everything on the bleeding edge.
-# TODO check if this is already done before doing it.
-echo 'Package: hostapd
-Pin: release a=testing
-Pin-Priority: 900' >> /etc/apt/preferences
-
-apt-get update
-
-# TODO: untested
-echo Trigger the Expect script to install the testing version of hostapd
-#expect install_hostapd.exp
-
 echo installing dnsutils
 apt-get install -y dnsutils
 
