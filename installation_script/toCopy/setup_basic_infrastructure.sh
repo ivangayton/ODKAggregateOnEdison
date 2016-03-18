@@ -17,7 +17,7 @@ apt-get -y install tomcat7 tomcat7-admin
 
 echo Adding tomcat users with permissions so that we can set up services
 cp /etc/tomcat7/tomcat-users.xml /etc/tomcat7/tomcat-users.xml.bak
-sed -i '/<\/tomcat-users>/c\<role rolename="manager-gui"\/>\n<role rolename="admin"\/>\n<user username="admin" password="admin" roles="admin,manager-gui\/">\n<\/tomcat-users>' /etc/tomcat7/tomcat-users.xml
+sed -i '/<\/tomcat-users>/c\<role rolename="manager-gui"\/>\n<role rolename="admin"\/>\n<user username="admin" password="admin" roles="admin,manager-gui"\/>\n<\/tomcat-users>' /etc/tomcat7/tomcat-users.xml
 
 echo Editing the tomcat context, needed for ODK Aggregate to work on Tomcat7
 cp /etc/tomcat7/context.xml /etc/tomcat7/context.xml.bak
@@ -29,6 +29,7 @@ echo 'deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main' >> /etc/apt
 apt-get -y install wget ca-certificates
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
 apt-get update
+# TODO this fails sometimes! no idea why... problem with a public key
 apt-get -y --force-yes install postgresql postgresql-client
 
 echo Changing Postgres root password to secure the installation
@@ -44,5 +45,5 @@ if [ ! -d /home/edison/www ]; then
   ln -s /home/edison/www/ /usr/share/nginx/www
 fi
 
-cp Copying a quickie welcome page for the Nginx server into its home folder
+echo Copying a quickie welcome page for the Nginx server into its home folder
 mv files/index.html /usr/share/nginx/www/

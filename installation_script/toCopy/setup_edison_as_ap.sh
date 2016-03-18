@@ -22,7 +22,7 @@ apt-get update
 
 # TODO: untested
 echo Trigger the Expect script to install the testing version of hostapd
-#./install_hostapd.exp
+#expect install_hostapd.exp
 
 echo installing dnsutils
 apt-get install -y dnsutils
@@ -36,15 +36,17 @@ echo making a backup of /etc/hostapd/hostapd.conf
 echo and nuking all black or comment lines
 cp /etc/hostapd/hostapd.conf /etc/hostapd/hostapd.conf.bak
 cat /etc/hostapd/hostapd.conf.bak | grep -v '#' | grep -v '^$' > /etc/hostapd/hostapd.conf
-echo setting the ssid (to the hostname plus -ap) and wpa_passphrase
+echo setting the ssid to the hostname plus ap and wpa passphrase
 sed -i "/ssid/c\ssid=$HOSTNAME-ap" /etc/hostapd/hostapd.conf
 wpa_passphrase=$(cat /home/edison/scripts/wpa_passphrase)
 sed -i "/wpa_passphrase/c\wpa_passphrase=$wpa_passphrase" /etc/hostapd/hostapd.conf
 
+echo creating both client and ap version of the hostapd file itself
 cp /etc/default/hostapd /etc/default/hostapd.CLIENT
 cp /etc/default/hostapd /etc/default/hostapd.AP
 echo 'DAEMON_CONF="/etc/hostapd/hostapd.conf"' >> /etc/default/hostapd.AP
 
+echo creating client and ap versions of /etc/network/interfaces
 cp /etc/network/interfaces /etc/network/interfaces.CLIENT
 cp /etc/network/interfaces /etc/network/interfaces.AP
 echo '

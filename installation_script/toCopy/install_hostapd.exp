@@ -1,7 +1,7 @@
 #!/usr/bin/expect -f
 
 set timeout 600
-spawn apt-get -t testing install -y hostapd\r"
+spawn apt-get -t testing install -y hostapd\r
 expect "H"
 send -- "	"
 expect "H"
