@@ -75,7 +75,7 @@ echo changing the hostname of the server
 echo $new_hostname > /etc/hostname
 "
 
-./copy_scripts_and_files_onto_edison.sh
+./copy.sh
 
 do_on_edison <<<"
 echo $server_ap_wpa_passphrase > /home/edison/scripts/wpa_passphrase
