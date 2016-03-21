@@ -29,9 +29,9 @@ done
 echo making all scripts executable on the Edison
 do_on_edison <<< "
 for i in /home/edison/scripts/*;
-do chmod +x $i;
+do chmod +x \$i;
 done;
 "
 
-echo Done copying files, and copying scripts and making the executable
+echo Done copying files, and copying scripts and making them executable
 

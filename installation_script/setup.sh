@@ -75,6 +75,7 @@ echo changing the hostname of the server
 echo $new_hostname > /etc/hostname
 "
 
+echo copying scripts and files over to the Edison
 ./copy.sh
 
 do_on_edison <<<"
