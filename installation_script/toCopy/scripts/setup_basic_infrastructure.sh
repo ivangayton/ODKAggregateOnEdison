@@ -27,10 +27,12 @@ echo Installing PostgreSQL
 echo 'deb http://apt.postgresql.org/pub/repos/apt/ wheezy-pgdg main' >> /etc/apt/sources.list.d/pgdg.list
 
 apt-get -y install wget ca-certificates
-# this is the culprit!
-# wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
+
+gpg --keyserver pgpkeys.mit.edu --recv-key 7FCC7D46ACCC4CF8      
+gpg -a --export 7FCC7D46ACCC4CF8 | apt-key add -
+
 apt-get update
-# TODO this fails sometimes! no idea why... problem with a public key
+# TODO this fails when Postgres updates (the public key changes)
 apt-get -y install postgresql postgresql-client
 
 echo Changing Postgres root password to secure the installation
