@@ -4,6 +4,7 @@ echo installing dnsutils
 apt-get install -y dnsutils
 
 echo 192.168.0.1     $HOSTNAME >> /etc/hosts
+echo 192.168.0.1 'mm' >> /etc/hosts
 
 cp /etc/dnsmasq.conf /etc/dnsmasq.conf.bak
 echo dhcp-range=192.168.0.50,192.168.0.150,12h >> /etc/dnsmasq.conf
