@@ -42,8 +42,11 @@ Now, if all goes well, you'll find yourself at a command prompt for a Bash shell
     cd /home/edison/scripts
     ./setup_basic_infrastructure.sh
 
+##Now add ODK Aggregate itself.
 
-# Now to turn the Edison into an access point
+    ./install_ODK_Aggregate.sh
+
+##Now to turn the Edison into an access point
 
 First, run this:
 
@@ -60,3 +63,10 @@ It will then ask if you want to install the package maintainer's version of the 
 Then run:
 
     ./setup_edison_as_ap_part_2.sh
+
+##Toggling between AP mode and client mode
+
+Now the Edison is able to function as either an access point or a client on the network.  To set it up as an ap, run
+
+    ./be_ap.sh
+
