@@ -70,3 +70,6 @@ Now the Edison is able to function as either an access point or a client on the 
 
     ./be_ap.sh
 
+##Reboot (or shut down and start again later)
+
+After rebooting (and a few minutes of startup time), the Edison will now be an AP, and it will appear as a wifi access point. Once connected to its wifi, the browsers on most devices will connect to the welcome page by typing the name you gave your server plus a forward slash (e.g. myserver/).  If not, it should connect by typing http://192.168.0.1 into your browser.
