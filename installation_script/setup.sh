@@ -88,3 +88,15 @@ sleep 5
 do_on_edison <<< "
 reboot
 "
+sleep 120
+
+echo trying to do the infrastructure setup from this scripts...
+do_on_edison <<< "
+cd /home/edison/scripts
+./setup_basic_infrastructure.sh
+./install_ODK_Aggregate.sh
+./setup_edison_as_ap_part_1.sh
+"
+
+
+
